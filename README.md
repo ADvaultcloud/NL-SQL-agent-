@@ -29,4 +29,5 @@ Results are returned instantly through the chat interface, creating a conversati
 ## 🖼 Workflow Diagram
 
 ```md
-![Workflow Diagram](natural-language-to-sql-query.png)
+![Workflow Diagram](natural language to sql query.png)
+
