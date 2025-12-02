@@ -26,6 +26,11 @@ Postgres runs the generated query
 
 Results are formatted and sent back to the user
 
+
+![Workflow Diagram](natural language to sql query.png)
+
+
+
 💡 Outcome
 
 A simple, powerful conversational data assistant that turns your Postgres database into a natural-language interface—ideal for analytics, support, and internal tools.
