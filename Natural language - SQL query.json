@@ -1,0 +1,200 @@
+{
+  "name": "Natural language - SQL query",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nHow can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bf2656ce-3ba4-4414-8783-60bd494a3346",
+      "name": "When chat message received",
+      "webhookId": "c31d8d22-4703-4ace-8df6-590b883d4c55"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an AI SQL Agent. Your purpose is to translate natural-language questions into accurate SQL queries for a PostgreSQL database and return precise, data-backed answers.\n\nThese are your roles and responsibilities:\n\n1. SQL Query Generation  \n   - Convert user queries into correct, optimized PostgreSQL SQL.  \n   - Use valid syntax, proper JOINs, grouping, and filters.  \n   - Never guess column names or fabricate relationships.\n\n2. Schema Awareness  \n   - Use ONLY the tables and columns provided in the database schema.  \n   - Reject or clarify any request involving non-existent tables or fields.  \n   - Validate that the schema supports the user’s question before writing SQL.\n\n3. Data Verification  \n   - Ensure that the requested information can actually be retrieved from the available data.  \n   - If the question is answerable → generate SQL.  \n   - If the question is NOT answerable due to missing tables/columns/data, respond exactly with:  \n     \"There is no available data to answer the particular question, but I can help with the following details:\"  \n     Then list what **can** be queried based on the schema.\n\n4. Clarification Handling  \n   - If the user question is unclear, ambiguous, underspecified, or has missing parameters, ask a follow-up question.  \n   - Do not generate SQL until the intent is fully clear.\n\n5. Output Discipline  \n   - If clarification is needed → ask for it.  \n   - If the question is answerable → return SQL only.  \n   - If data is unavailable → provide the required no-data message and alternatives.  \n   - Keep explanations factual and minimal. No fluff, no conversational padding.\n\n6. Behavior Constraints  \n   - Be deterministic, schema-aware, and validation-first.  \n   - Do not speculate.  \n   - Do not generate fictitious entities.  \n   - Do not produce output beyond what the schema and data allow.\n\nYour mission is to reliably and accurately convert English questions into SQL queries and provide correct, schema-aligned answers based strictly on the database structure.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7dd34abf-5bd2-4e65-bfc5-12c51904b33a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "964e56bf-9ecc-4092-b372-b657694ce65e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ANwu2su2OuDILRsl",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "2b866f7a-938d-4ac2-bfe1-07014982f36b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tBMpu1rqCqMLfV29",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/tBMpu1rqCqMLfV29",
+          "cachedResultName": "My project — sql query executor"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sql_query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('sql_query', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sql_query",
+              "displayName": "sql_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        192
+      ],
+      "id": "00117400-868f-40db-9e07-1af2dcfee613",
+      "name": "query executor"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Fetch the table schema ",
+        "operation": "executeQuery",
+        "query": "SELECT \n    table_name,\n    column_name,\n    data_type,\n    is_nullable,\n    ordinal_position\nFROM information_schema.columns\nWHERE table_schema = 'public'\nORDER BY table_name, ordinal_position;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        448,
+        192
+      ],
+      "id": "ab9451ba-6d24-45dc-99bd-33dded7b061d",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "Mzd6Jnx1gchT6dRq",
+          "name": "Postgres account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "query executor": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bffe824d-dfa1-492b-b40c-ec5ef4fc56f8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ab2f19fe554d610e1dbbd16eb41bd72e06f29e602bda9d1402c6c9574737f0a"
+  },
+  "id": "ckqyNaGTQrEtXlPX",
+  "tags": []
+}
